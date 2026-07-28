@@ -95,7 +95,8 @@ public class Vk11Backend implements GpuBackend {
 			enableDeviceExtensions(deviceExtensions, physicalDevice,
 					"VK_KHR_portability_subset",
 					"VK_EXT_multi_draw",
-					"VK_EXT_vertex_attribute_divisor"
+					"VK_EXT_vertex_attribute_divisor",
+					"VK_KHR_shader_draw_parameters"
 					);
             if(useDebugLabels) {
 				enableDeviceExtensions(deviceExtensions, physicalDevice, "VK_AMD_buffer_marker", "VK_NV_device_diagnostic_checkpoints");
@@ -177,7 +178,8 @@ public class Vk11Backend implements GpuBackend {
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.calloc(stack);
 			VK10.vkGetPhysicalDeviceProperties(vkPhysicalDevice, properties);
-			return properties.apiVersion() >= VK11.VK_API_VERSION_1_1;
+			// TODO: FIX
+			return properties.apiVersion() >= VK10.VK_API_VERSION_1_0;
 		}
 	}
 
@@ -188,10 +190,6 @@ public class Vk11Backend implements GpuBackend {
 			String deviceName = physicalDevice.deviceName();
             Set<String> missingExtensions = physicalDevice.getMissingExtensions(REQUIRED_DEVICE_EXTENSIONS);
             boolean isSuitableDevice = true;
-            if (physicalDevice.vkPhysicalDeviceProperties().apiVersion() < VK11.VK_API_VERSION_1_1) {
-                ArtVK.LOGGER.warn("Device [{}] does not support Vulkan 1.1", deviceName);
-                isSuitableDevice = false;
-            }
 
             if (physicalDevice.graphicsQueueFamilyAndIndex() == null) {
                 ArtVK.LOGGER.warn("Device [{}] does not have a graphics queue", deviceName);
@@ -214,7 +212,7 @@ public class Vk11Backend implements GpuBackend {
 	private static boolean isDeviceDiscrete(final VkPhysicalDevice vkPhysicalDevice) {
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
-			VK11.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
+			KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceProperties2KHR(vkPhysicalDevice, deviceProperties);
 			return deviceProperties.properties().deviceType() == VK10.VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 		}
 	}
@@ -222,7 +220,7 @@ public class Vk11Backend implements GpuBackend {
 	private static String getDeviceName(final VkPhysicalDevice vkPhysicalDevice) {
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
-			VK11.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
+			KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceProperties2KHR(vkPhysicalDevice, deviceProperties);
 			return deviceProperties.properties().deviceNameString();
 		}
 	}
@@ -239,7 +237,7 @@ public class Vk11Backend implements GpuBackend {
 			MemoryStack stack = MemoryStack.stackPush();
 		) {
 			VkPhysicalDeviceFeatures2 deviceFeatures = VkPhysicalDeviceFeatures2.calloc(stack).sType$Default();
-			VK11.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, deviceFeatures);
+			KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, deviceFeatures);
 
 			Set<String> missingExtensions = physicalDevice.getMissingExtensions(REQUIRED_DEVICE_EXTENSIONS);
 			if (!missingExtensions.isEmpty()) {
@@ -250,11 +248,6 @@ public class Vk11Backend implements GpuBackend {
 			if (physicalDevice.graphicsQueueFamilyAndIndex() == null) {
 				mostProminentReason = BackendCreationException.Reason.VULKAN_NO_GRAPHICS_QUEUE;
 				missingCapabilities.add("COMBINED_GRAPHICS_COMPUTE_PRESENT_QUEUE");
-			}
-
-			if (physicalDevice.vkPhysicalDeviceProperties().apiVersion() < VK11.VK_API_VERSION_1_1) {
-				mostProminentReason = BackendCreationException.Reason.VULKAN_DEVICE_VERSION_TOO_LOW;
-				missingCapabilities.add("VULKAN_CORE_1_1");
 			}
 		}
 

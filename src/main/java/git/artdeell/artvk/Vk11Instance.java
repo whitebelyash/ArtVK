@@ -38,7 +38,7 @@ public class Vk11Instance implements AutoCloseable {
 				.applicationVersion(APPLICATION_VERSION)
 				.pEngineName(stack.UTF8(ENGINE_NAME))
 				.engineVersion(ENGINE_VERSION)
-				.apiVersion(VK11.VK_API_VERSION_1_1);
+				.apiVersion(VK10.VK_API_VERSION_1_0);
 			List<String> validationLayers = this.getSupportedValidationLayers();
 			PointerBuffer requiredLayers = null;
 			if (validation) {
@@ -57,6 +57,10 @@ public class Vk11Instance implements AutoCloseable {
 			if (glfwExtensions == null) {
 				throw new BackendCreationException("Failed to find the GLFW platform surface extensions", BackendCreationException.Reason.GLFW_ERROR);
 			}
+
+			if(!availableExtensions.contains("VK_KHR_get_physical_device_properties2"))
+				throw new BackendCreationException("Failed to find required instance extension: VK_KHR_get_physical_device_properties2", BackendCreationException.Reason.VULKAN_MISSING_EXTENSION);
+			this.enabledExtensions.add("VK_KHR_get_physical_device_properties2");
 
 			while (glfwExtensions.remaining() > 0) {
 				this.enabledExtensions.add(MemoryUtil.memUTF8(glfwExtensions.get()));

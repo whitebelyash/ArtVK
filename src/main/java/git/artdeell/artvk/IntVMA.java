@@ -8,6 +8,7 @@ import org.lwjgl.system.Pointer;
 import org.lwjgl.util.vma.Vma;
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo;
 import org.lwjgl.util.vma.VmaVulkanFunctions;
+import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK11;
 import org.lwjgl.vulkan.VkAllocationCallbacks;
 import org.lwjgl.vulkan.VkDevice;
@@ -25,7 +26,7 @@ public class IntVMA {
             allocationCallbacks.pfnReallocation(this::reallocate);
             VmaAllocatorCreateInfo createInfo = VmaAllocatorCreateInfo.calloc(stack)
                     .instance(vkDevice.getPhysicalDevice().getInstance())
-                    .vulkanApiVersion(VK11.VK_API_VERSION_1_1)
+                    .vulkanApiVersion(VK10.VK_API_VERSION_1_0)
                     .device(vkDevice)
                     .physicalDevice(vkDevice.getPhysicalDevice())
                     .pVulkanFunctions(vmaVulkanFunctions)

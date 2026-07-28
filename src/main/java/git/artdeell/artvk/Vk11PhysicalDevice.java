@@ -61,14 +61,13 @@ public class Vk11PhysicalDevice implements AutoCloseable {
             this.vkPhysicalDeviceProperties.pNext(this.vkPhysicalDeviceVulkan11Properties);
 			this.vkPhysicalDeviceProperties.pNext(this.vkPhysicalDeviceDriverProperties);
 
-
-			VK11.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, this.vkPhysicalDeviceProperties);
+			KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceProperties2KHR(vkPhysicalDevice, this.vkPhysicalDeviceProperties);
 
 			VK10.vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, intBuffer, null);
 			org.lwjgl.vulkan.VkQueueFamilyProperties.Buffer vkQueueFamilyProps = VkQueueFamilyProperties.calloc(intBuffer.get(0), stack);
 			VK10.vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, intBuffer, vkQueueFamilyProps);
 			this.vkPhysicalDeviceFeatures = VkPhysicalDeviceFeatures2.calloc().sType$Default();
-			VK11.vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, this.vkPhysicalDeviceFeatures);
+			KHRGetPhysicalDeviceProperties2.vkGetPhysicalDeviceFeatures2KHR(vkPhysicalDevice, this.vkPhysicalDeviceFeatures);
 			int graphicsQueueFamily = -1;
 			int computeQueueFamily = -1;
 			int transferQueueFamily = -1;
